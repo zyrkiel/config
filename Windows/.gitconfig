@@ -1,0 +1,140 @@
+# Using any proxy settings ?
+#[http]
+#    proxy = <Proxy_addre>
+#    sslVerify = false
+#
+
+[user]
+	name = Thibault GEFFROY
+	email = thibault.geffroy@moduleus.com
+
+[alias]
+    lg = log --graph --date=relative --pretty=tformat:'%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%an %ad)%Creset'
+    my-work = !git log --all --committer="`git config user.email`" --date=local --pretty=tformat:'%Cred%h%Creset - %Cgreen(%ad)%Creset %s'
+    cdiff = diff --word-diff --word-diff-regex=.
+    wdiff = diff --word-diff
+    stashall = stash save --include-untracked
+    stashunstaged = stash save --keep-index --include-untracked
+    st = status --short --branch
+    clean-tags = !git tag -l | xargs git tag -d && git fetch -t
+
+    # Cleanup all remote branches
+    # Cleanup all merged branches (on master or release branch)
+    # Colors are disabled if piped
+    # Hint: List whatever origin branch you consider for integration in the for loop
+    # (ie. the branch was merged to). You can use $(git branch -r | grep/awk/sed "<regex>")
+    clean-branches = "!git_cleanup_merged_branches() \
+                      { \
+                          if [ -t 1 ]; then \
+                              git_cleanup_reset_color=$(echo -e '\\e[0m'); \
+                              git_cleanup_light_red=$(echo -e '\\e[1;31m'); \
+                              git_cleanup_light_green=$(echo -e '\\e[1;32m'); \
+                              git_cleanup_light_cyan=$(echo -e '\\e[1;36m'); \
+                          fi; \
+ \
+                          git_sed_color_pruned=\"s/\\[pruned\\]/\\[${git_cleanup_light_green}pruned${git_cleanup_reset_color}\\]/\"; \
+ \
+                          git remote show | xargs --no-run-if-empty -n 1 git remote prune | sed \"${git_sed_color_pruned}\"; \
+ \
+                          git_main_branch=''; \
+                          git_sed_color_deleted=\"s/Deleted branch \\([^ ]*\\) (was \\([a-fA-F0-9]*\\))/Successfully deleted branch ${git_cleanup_light_green}\\1${git_cleanup_reset_color} (was ${git_cleanup_light_cyan}\\2${git_cleanup_reset_color})/\"; \
+                          git_sed_color_unmerged=\"s/error: The branch '\\([^']*\\)' is not fully merged./Can't delete branch ${git_cleanup_light_red}\\1${git_cleanup_reset_color} (not fully merged)/\"; \
+ \
+                          for git_main_branch in origin/master; do \
+                              git branch --merged $git_main_branch | grep -v '^\\*' \
+                                                                   | xargs --no-run-if-empty -n 1 git branch -d 2>&1 \
+                                                                   | sed \"${git_sed_color_deleted};${git_sed_color_unmerged}\"; \
+                          done; \
+                      }; git_cleanup_merged_branches"
+
+    chmod = update-index --add --chmod
+    alias = !git config --get-regexp ^alias\\. | cut -d ' ' -f 1 | cut -d '.' -f 2
+    upstream-candidates = !git log $(git rev-parse --abbrev-ref --symbolic-full-name @{upstream} 2>/dev/null)..HEAD  --pretty='format:%Cred%h%Creset %s' --color
+	spull = "__git_spull() { git pull \"$@\" && git submodule sync --recursive && git submodule update --init --recursive; }; __git_spull"
+	pullall = "!f(){ git pull \"$@\" && git submodule update --init --recursive; }; f"
+
+[core]
+    # Out of luck: on Windows w/o msysGit? You may have Notepad++...
+    #editor = 'C:/Program Files (x86)/Notepad++/notepad++.exe' -multiInst -notabbar -nosession -noPlugin
+
+    # Don't consider trailing space change as a cause for merge conflicts
+    whitespace = -trailing-space
+
+    # Don't change endline on Windows
+    #autocrlf = false
+
+    # Don't handle chmod changes on Windows
+    #filemode = false
+
+# Uncomment to use a git message template (~/.gitmessage file creation needed)
+#[commit]
+#    template = ~/.gitmessage
+
+[diff]
+    # Use better, descriptive initials (c, i, w) instead of a/b.
+    mnemonicPrefix = true
+
+    # Show renames/moves as such
+    renames = true
+
+    # Display submodule-related information (commit listings)
+    submodule = log
+
+[grep]
+    # Consider most regexes to be ERE
+    extendedRegexp = true
+
+[log]
+    # Use abbrev SHAs whenever possible/relevant instead of full 40 chars
+    abbrevCommit = true
+
+    # Automatically --follow when given a single path
+    follow = true
+
+[merge]
+    # Display common-ancestor blocks in conflict hunks
+    conflictStyle = diff3
+
+[mergetool]
+    # Clean up backup files created by merge tools on tool exit
+    keepBackup = false
+
+    # Clean up temp files created by merge tools on tool exit
+    keepTemporaries = false
+
+    # Put the temp files in a dedicated dir anyway
+    writeToTemp = true
+
+    # Auto-accept file prompts when launching merge tools
+    prompt = false
+
+[pull]
+    # Prefer rebase over merge strategy
+    rebase = true
+
+[status]
+    # Display submodule rev change summaries in status
+	submoduleSummary = true
+
+    # Recursively traverse untracked directories to display all contents
+    showUntrackedFiles = all
+
+[color]
+    branch = auto
+    diff = auto
+    status = auto
+    ui = auto
+
+[tag]
+    # Sort tags as version numbers whenever applicable, so 1.10.2 is AFTER 1.2.0.
+    sort = version:refname
+
+[versionsort]
+    prereleaseSuffix = -pre
+    prereleaseSuffix = .pre
+    prereleaseSuffix = -beta
+    prereleaseSuffix = .beta
+    prereleaseSuffix = -rc
+    prereleaseSuffix = .rc
+[submodule]
+	recurse = false
