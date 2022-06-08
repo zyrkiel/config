@@ -39,7 +39,8 @@
                           git_sed_color_deleted=\"s/Deleted branch \\([^ ]*\\) (was \\([a-fA-F0-9]*\\))/Successfully deleted branch ${git_cleanup_light_green}\\1${git_cleanup_reset_color} (was ${git_cleanup_light_cyan}\\2${git_cleanup_reset_color})/\"; \
                           git_sed_color_unmerged=\"s/error: The branch '\\([^']*\\)' is not fully merged./Can't delete branch ${git_cleanup_light_red}\\1${git_cleanup_reset_color} (not fully merged)/\"; \
  \
-                          for git_main_branch in origin/master; do \
+                          git_default_remote_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@'); \
+                          for git_main_branch in origin/$git_default_remote_branch; do \
                               git branch --merged $git_main_branch | grep -v '^\\*' \
                                                                    | xargs --no-run-if-empty -n 1 git branch -d 2>&1 \
                                                                    | sed \"${git_sed_color_deleted};${git_sed_color_unmerged}\"; \
